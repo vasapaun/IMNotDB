@@ -43,3 +43,7 @@ RUN chmod -R 777 /var/www/html/database
 
 # Startup command: run migrations and seed every time, then serve
 CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0 --port=8000
+
+# Check that the database file exists and is writable
+RUN ls -l /var/www/html/database/database.sqlite
+RUN php -r "if (!is_writable('/var/www/html/database/database.sqlite')) { echo 'Not writable'; exit(1); } else { echo 'Writable'; }"
