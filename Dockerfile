@@ -1,36 +1,43 @@
-# Base image with PHP + Composer
+# Use official PHP + Composer image
 FROM php:8.2-fpm
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
-    git \
+    libsqlite3-dev \
     unzip \
-    libzip-dev \
-    zip \
+    git \
     curl \
     npm \
     nodejs \
-    && docker-php-ext-install pdo_mysql
+    libonig-dev \
+    && docker-php-ext-install pdo pdo_sqlite
+
+# Install Composer globally
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer.json and install dependencies
-COPY composer.json composer.lock ./
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Copy project files
+COPY . .
+
+# Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Copy Node files and install
-COPY package*.json ./
+# Install Node dependencies and build assets
 RUN npm install
-COPY . .
 RUN npm run build
 
-# Copy the rest of the Laravel app
-COPY . .
+# Cache configs and routes
+RUN php artisan config:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
 
-# Expose port 9000
-EXPOSE 9000
+# Expose port 8000
+EXPOSE 8000
 
-# Start PHP-FPM
-CMD ["php-fpm"]
+# Run migrations and seed database
+RUN php artisan migrate --seed
+
+# Start the built-in PHP server
+CMD php artisan serve --host=0.0.0.0 --port=8000
