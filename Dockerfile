@@ -36,6 +36,9 @@ RUN php artisan view:cache
 # Expose port 8000
 EXPOSE 8000
 
+# Create the database
+RUN touch /var/www/html/database/database.sqlite
+
 # Run migrations and seed database
 RUN php artisan migrate --seed
 
