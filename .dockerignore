@@ -1,0 +1,38 @@
+# Node modules
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Composer / PHP
+vendor
+composer.lock
+
+# Laravel / Env
+.env
+.env.*.backup
+/storage/*.key
+/storage/pail
+/public/storage
+
+# IDEs / Editors
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Vite / build output (we rebuild in Docker)
+public/build
+public/hot
+
+# Misc
+.phpunit.result.cache
+.phpactor.json

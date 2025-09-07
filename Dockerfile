@@ -1,4 +1,5 @@
-# Use official PHP + Composer image
+
+# Stage 0: Build
 FROM php:8.2-cli
 
 # Install system dependencies
@@ -6,43 +7,38 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
-    libsqlite3-dev \
+    sqlite3 \
+    curl \
+    npm \
     && docker-php-ext-install pdo pdo_sqlite zip
-
-# Install Composer globally
-RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
-    && php -r "unlink('composer-setup.php');"
-
-# Install Node.js and npm (for Vite/Tailwind)
-RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
-    && apt-get install -y nodejs
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer & npm files
-COPY composer.json composer.lock ./
-COPY package.json package-lock.json ./
-
-# Install PHP and JS dependencies
-RUN composer install --no-dev --optimize-autoloader
-RUN npm install && npm run build
-
-# Copy the app
+# Copy project files
 COPY . .
 
-# Make sure database folder exists
-RUN mkdir -p database
+# Install Composer
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader
+
+# Install Node dependencies and build assets
+RUN npm install
+RUN npm run build
+
+# Ensure database file exists and is writable
 RUN touch database/database.sqlite
 RUN chmod -R 777 database
 
-# Copy entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Cache configs, routes, views
+RUN php artisan config:cache
+RUN php artisan route:cache
+RUN php artisan view:cache
 
-# Expose port
+# Expose the port
 EXPOSE 8000
 
-# Run the entrypoint
-ENTRYPOINT ["/entrypoint.sh"]
+# Run migrations and seed database on every container start
+CMD php artisan migrate --seed && php artisan serve --host=0.0.0.0 --port=8000
