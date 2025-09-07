@@ -39,8 +39,5 @@ EXPOSE 8000
 # Create the database
 RUN touch /var/www/html/database/database.sqlite
 
-# Run migrations and seed database
-RUN php artisan migrate --seed
-
-# Start the built-in PHP server
-CMD php artisan serve --host=0.0.0.0 --port=8000
+# Startup command: run migrations and seed every time, then serve
+CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0 --port=8000
