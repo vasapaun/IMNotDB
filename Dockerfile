@@ -9,6 +9,11 @@ RUN apt-get update && apt-get install -y \
     libsqlite3-dev \
     && docker-php-ext-install pdo pdo_sqlite zip
 
+# Install Composer globally
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && php -r "unlink('composer-setup.php');"
+
 # Install Node.js and npm (for Vite/Tailwind)
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y nodejs
