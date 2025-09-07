@@ -38,6 +38,8 @@ EXPOSE 8000
 
 # Create the database
 RUN touch /var/www/html/database/database.sqlite
+RUN chmod 777 /var/www/html/database/database.sqlite
+RUN chmod -R 777 /var/www/html/database
 
 # Startup command: run migrations and seed every time, then serve
 CMD php artisan migrate:fresh --seed --force && php artisan serve --host=0.0.0.0 --port=8000
