@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y \
     git \
     unzip \
     libzip-dev \
-    sqlite3 \
+    libsqlite3-dev \
     && docker-php-ext-install pdo pdo_sqlite zip
 
 # Install Node.js and npm (for Vite/Tailwind)
