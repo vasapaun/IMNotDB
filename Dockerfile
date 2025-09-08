@@ -1,5 +1,5 @@
-# Use official PHP image with necessary extensions
-FROM php:8.2-cli
+# Use official PHP with Apache base
+FROM php:8.3-apache
 
 # Set working directory
 WORKDIR /var/www/html
@@ -10,28 +10,31 @@ RUN apt-get update && apt-get install -y \
     unzip \
     libzip-dev \
     libsqlite3-dev \
+    zip \
     curl \
-    npm \
     && docker-php-ext-install pdo pdo_sqlite zip
+
+# Copy Laravel app
+COPY . .
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Copy project files
-COPY . .
-
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Install JS dependencies and build assets
-RUN npm install && npm run build
+# Install Node.js dependencies
+RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+    && apt-get install -y nodejs \
+    && npm install \
+    && npm run build
 
-# Copy entrypoint and make it executable
+# Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Expose port
 EXPOSE 8000
 
-# Use entrypoint
+# Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"]

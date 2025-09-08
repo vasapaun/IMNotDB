@@ -1,11 +1,16 @@
 #!/bin/sh
 
-# Ensure SQLite exists and is writable
+# Ensure SQLite exists
 mkdir -p /var/www/html/database
 touch /var/www/html/database/database.sqlite
 chmod -R 777 /var/www/html/database
 
-# Set APP_KEY if not set (optional)
+# Ensure .env exists
+if [ ! -f /var/www/html/.env ]; then
+    cp /var/www/html/.env.example /var/www/html/.env
+fi
+
+# Generate APP_KEY if needed
 if [ -z "$APP_KEY" ]; then
     php artisan key:generate
 fi
@@ -15,7 +20,7 @@ php artisan config:clear
 php artisan route:clear
 php artisan view:clear
 
-# Run migrations & seed database
+# Run migrations and seed database
 php artisan migrate --seed
 
 # Start Laravel server
